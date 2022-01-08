@@ -1,0 +1,6 @@
+/sevec.exe
+/sevec
+*.o
+
+/docs/sphinx/build/
+/docs/doxygen/build/
