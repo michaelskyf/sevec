@@ -18,98 +18,62 @@
 #define SEVEC_H
 #include <sys/types.h>
 
-typedef struct vector
+typedef struct vector_header
 {
 	size_t size;
 	size_t max_size;
 	size_t capacity;
 	size_t item_size;
-	void *data;
 }
-vector_t;
+vector_header_t;
 
-/* note: return 0 on success, NULL or -1 on failure */
+int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size); /* if max_size is 0, set it to -1 */
+void vector_destroy_generic(void **data);
 
-/* if max_size is 0, ignore it */
-__attribute__((warn_unused_result))
-vector_t *vector_create_generic(size_t capacity, size_t item_size, size_t max_size);
-void vector_destroy_generic(vector_t *);
-
-/* if size > capacity, realloc */
-int vector_resize_generic(vector_t *, size_t new_size);
-/* if new_capacity is less or equal old_capacity, do nothing */
-int vector_reserve_generic(vector_t *, size_t new_capacity);
-/* if new_capacity is greater or equal old_capacity, do nothing */
-int vector_shrink_generic(vector_t *, size_t new_capacity);
-
-/* if const void* is NULL, do not copy data and do not zero new elements, but do resize */
-void *vector_push_generic(vector_t *, const void *);
-/* if void* is NULL, do not copy data, but do resize */
-int vector_pop_generic(vector_t *, void *);
+int vector_resize_generic(void **data, size_t new_size);
+int vector_reserve_generic(void **data, size_t new_capacity);
+int vector_shrink_generic(void **data, size_t new_capacity);
 
 __attribute__((warn_unused_result))
-void *vector_start_generic(vector_t *);
-__attribute__((warn_unused_result))
-void *vector_end_generic(vector_t *);
+void *vector_get_generic(void **data, size_t index);
+
+void *vector_push_generic(void **data, const void *);
+int vector_pop_generic(void **data, void *);
 
 __attribute__((warn_unused_result))
-void *vector_get_generic(vector_t *, size_t index);
-__attribute__((warn_unused_result))
-size_t vector_index_generic(vector_t *, const void *);
+vector_header_t *vector_get_struct_generic(void **data);
 
-/* Helper funcions for type-safe vectors */
-__attribute__((warn_unused_result))
-size_t vector_size_generic(vector_t *);
-__attribute__((warn_unused_result))
-size_t vector_capacity_generic(vector_t *);
-__attribute__((warn_unused_result))
-size_t vector_max_size_generic(vector_t *);
+/* Compare types of a and b */
+#define SEVEC_ASSERT_SAME_TYPE(type, v) ((void*) (1 ? v : (__typeof__(type))0))
+/* Check if x is at least of type "(type)**" */
+#define SEVEC_ASSERT_DATA(data) (void**)(1 ? (void**)data : (void**)&(**data))
 
 
-#define vector_create_definitions_of_type(type) \
-	typedef struct vector_##type{struct vector vec;}vector_##type##_t; \
-	\
-	__attribute__((warn_unused_result)) \
-	static inline vector_##type##_t *vector_create_##type(size_t capacity, size_t max_size) \
-		{ return (vector_##type##_t*)vector_create_generic(capacity, sizeof(type), max_size); } \
-	static inline void vector_destroy_##type(vector_##type##_t *v) \
-		{ vector_destroy_generic((vector_t*)v); } \
-	\
-	static inline int vector_resize_##type(vector_##type##_t *v, size_t new_size) \
-		{ return vector_resize_generic((vector_t*)v, new_size); } \
-	static inline int vector_reserve_##type(vector_##type##_t *v, size_t new_capacity) \
-		{ return vector_reserve_generic((vector_t*)v, new_capacity); } \
-	static inline int vector_shrink_##type(vector_##type##_t *v, size_t new_capacity) \
-		{ return vector_shrink_generic((vector_t*)v, new_capacity); } \
-	\
-	static inline type *vector_push_##type(vector_##type##_t *v, const type *e) \
-		{ return (type*)vector_push_generic((vector_t*)v, (const void*)e); } \
-	static inline int vector_pop_##type(vector_##type##_t *v, type *e) \
-		{ return vector_pop_generic((vector_t*)v, (void*)e); } \
-	\
-	__attribute__((warn_unused_result)) \
-	static inline type *vector_start_##type(vector_##type##_t *v) \
-		{ return (type*)vector_start_generic((vector_t*)v); } \
-	__attribute__((warn_unused_result)) \
-	static inline type *vector_end_##type(vector_##type##_t *v) \
-		{ return vector_end_generic((vector_t*)v); } \
-	\
-	__attribute__((warn_unused_result)) \
-	static inline type *vector_get_##type(vector_##type##_t *v, size_t index) \
-		{ return (type*)vector_get_generic((vector_t*)v, index); } \
-	__attribute__((warn_unused_result)) \
-	static inline size_t vector_index_##type(vector_##type##_t *v, const type *e) \
-		{ return vector_index_generic((vector_t*)v, (const void*)e); } \
-	\
-	__attribute__((warn_unused_result)) \
-	static inline size_t vector_size_##type(vector_##type##_t *v) \
-		{ return vector_size_generic((vector_t*)v); } \
-	__attribute__((warn_unused_result)) \
-	static inline size_t vector_capacity_##type(vector_##type##_t *v) \
-		{ return vector_capacity_generic((vector_t*)v); } \
-	__attribute__((warn_unused_result)) \
-	static inline size_t vector_max_size_##type(vector_##type##_t *v) \
-		{ return vector_max_size_generic((vector_t*)v); }
+#define vector_create(data, capacity, max_size) \
+		vector_create_generic(SEVEC_ASSERT_DATA(data), sizeof(**data), capacity, max_size) \
 
+#define vector_destroy(data) \
+		vector_destroy_generic(SEVEC_ASSERT_DATA(data)) \
+
+
+#define vector_resize(data, new_size) \
+		vector_resize_generic(SEVEC_ASSERT_DATA(data), new_size)
+
+#define vector_reserve(data, new_capacity) \
+		vector_reserve_generic(SEVEC_ASSERT_DATA(data), new_capacity)
+
+#define vector_shrink(data, new_capacity) \
+		vector_shrink_generic(SEVEC_ASSERT_DATA(data), new_capacity)
+
+
+#define vector_get(data, index) \
+		vector_get_generic(SEVEC_ASSERT_DATA(data), index)
+
+
+#define vector_push(data, element) \
+		vector_push_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, element)) \
+
+#define vector_pop(data, store) \
+		vector_pop_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, element))
 
 #endif

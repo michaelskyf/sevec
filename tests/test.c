@@ -3,22 +3,30 @@
 #include <errno.h>
 #include <string.h>
 
-vector_create_definitions_of_type(int)
-vector_create_definitions_of_type(size_t)
-vector_create_definitions_of_type(float)
+typedef struct test_data{
+	int hello_world;
+	float work;
+	char name[20];
+	char surname[20];
+}test_data_t;
 
 int main(void)
 {
-	vector_int_t *vi = vector_create_int(0, 0);
-	for(size_t i = 0; i < 10000; i++)
-	{
-		vector_push_int(vi, NULL);
-	}
-	for(size_t i = 0; i < 10000; i++)
-	{
+	int *data;
+	int xd = 9;
+	vector_create(&data, 0, 0);
 
-	}
-	vector_destroy_int(vi);
+	vector_push(&data, &xd);
+
+	vector_destroy(&data);
+
+	test_data_t *t;
+	vector_create(&t, 0, 0);
+
+	test_data_t dummy_data;
+	vector_push(&t, &dummy_data);
+
+	vector_destroy(&t);
 
 	return 0;
 }
