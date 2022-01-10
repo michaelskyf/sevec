@@ -13,18 +13,21 @@ typedef struct test_data{
 int main(void)
 {
 	int *data;
+	test_data_t *t;
+
 	int xd = 9;
+	test_data_t dummy_data;
+
 	vector_create(&data, 0, 0);
 
 	vector_push(&data, &xd);
 
 	vector_destroy(&data);
 
-	test_data_t *t;
 	vector_create(&t, 0, 0);
 
-	test_data_t dummy_data;
 	vector_push(&t, &dummy_data);
+	vector_pop(&t, NULL);
 
 	vector_destroy(&t);
 

@@ -22,38 +22,50 @@
 
 static float growth_rate = 1.6f;
 
+__attribute__((warn_unused_result))
+static int vector_reserve_or_shrink(vector_t *, size_t new_capacity);
+
 int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size)
 {
-	vector_header_t *v;
-	size_t alloc_length = capacity*item_size;
-
+	vector_t *v;
 	max_size = (max_size) ? (max_size) : ((size_t)-1);
 
-	v = malloc(sizeof(vector_header_t) + ((alloc_length > max_size) ? (max_size) : (alloc_length)));
+	v = malloc(sizeof(vector_t));
 	if(v)
 	{
 		v->size = 0;
-		v->max_size = max_size;
 		v->capacity = capacity;
+		v->max_size = max_size;
 		v->item_size = item_size;
-		*data = (char*)v+sizeof(vector_header_t);
+		v->data = NULL;
 
-		return 0;
+		v->data = malloc(sizeof(vector_t*) + capacity*v->item_size);
+		if(v->data)
+		{
+			vector_t **vd;
+			v->data = (char*)v->data+sizeof(vector_t*);
+
+			*data = v->data;
+			vd = vector_get_struct_generic(data);
+			*vd = v;
+			return 0;
+		}
+		free(v);
 	}
 	return -1;
 }
 
 void vector_destroy_generic(void **data)
 {
-	vector_header_t *v = vector_get_struct_generic(data);
+	vector_t *v = *vector_get_struct_generic(data);
+	free((char*)v->data-sizeof(vector_t*));
 	free(v);
 	*data = NULL;
 }
 
-/* REMEMBER TO GET A NEW VECTOR AFTER A CALL TO THIS FUNCTION */
 int vector_resize_generic(void **data, size_t new_size)
 {
-	vector_header_t *v = vector_get_struct_generic(data);
+	vector_t *v = *vector_get_struct_generic(data);
 	int ret = 0;
 	size_t new_capacity = v->capacity;
 
@@ -68,68 +80,74 @@ int vector_resize_generic(void **data, size_t new_size)
 			else
 				new_capacity = gcap;
 		}
-		if(!(ret = vector_reserve_generic(data, new_capacity)))
-				v = vector_get_struct_generic(data);
+		ret = vector_reserve_generic(data, new_capacity);
 	}
 	if(!ret)
 		v->size++;
 	return ret;
 }
 
-/* REMEMBER TO GET A NEW VECTOR AFTER A CALL TO THIS FUNCTION */
-int vector_reserve_generic(void **data, size_t new_capacity)
+static int vector_reserve_or_shrink(vector_t *v, size_t new_capacity)
 {
-	vector_header_t *v = vector_get_struct_generic(data);
-	vector_header_t *new_vector;
+	void *new_data;
 
 	if(new_capacity > v->max_size)
 		return -1;
-	if(new_capacity <= v->capacity)
-		return 0;
 
-	new_vector = realloc(v, sizeof(vector_header_t) + new_capacity*v->item_size);
-	if(!new_vector)
+	new_data = realloc((char*)v->data-sizeof(vector_t*), sizeof(vector_t*) + new_capacity*v->item_size);
+	if(!new_data)
 		return -1;
 
-	*data = (char*)new_vector+sizeof(vector_header_t);
+	v->capacity = new_capacity;
+	v->data = (char*)new_data+sizeof(vector_t*);
 
 	return 0;
 }
 
-/* REMEMBER TO GET A NEW VECTOR AFTER A CALL TO THIS FUNCTION */
+int vector_reserve_generic(void **data, size_t new_capacity)
+{
+	vector_t *v = *vector_get_struct_generic(data);
+
+	if(new_capacity <= v->capacity)
+		return 0;
+
+	if(!vector_reserve_or_shrink(v, new_capacity))
+	{
+		*data = v->data;
+		return 0;
+	}
+	return -1;
+}
+
 int vector_shrink_generic(void **data, size_t new_capacity)
 {
-	vector_header_t *v = vector_get_struct_generic(data);
-	vector_header_t *new_vector;
+	vector_t *v = *vector_get_struct_generic(data);
 
 	if(new_capacity >= v->capacity)
 		return 0;
 
-	new_vector = realloc(v, sizeof(vector_header_t) + new_capacity*v->item_size);
-	if(!new_vector)
-		return -1;
-
-	*data = (char*)new_vector+sizeof(vector_header_t);
-
-	return 0;
+	if(!vector_reserve_or_shrink(v, new_capacity))
+	{
+		*data = v->data;
+		return 0;
+	}
+	return -1;
 }
 
 void *vector_get_generic(void **data, size_t index)
 {
-	vector_header_t *v = vector_get_struct_generic(data);
+	vector_t *v = *vector_get_struct_generic(data);
 	if(index > v->size)
 		return NULL;
 	return *(char**)data+v->item_size*index;
 }
 
-/* REMEMBER TO GET A NEW VECTOR AFTER A CALL TO THIS FUNCTION */
 void *vector_push_generic(void **data, const void *element)
 {
 	void *ret = NULL;
-	vector_header_t *v = vector_get_struct_generic(data);
+	vector_t *v = *vector_get_struct_generic(data);
 	if(!vector_resize_generic(data, v->size+1))
 	{
-		v = vector_get_struct_generic(data);
 		if(element)
 			ret = memcpy(*(char**)data + (v->size-1) * v->item_size, element, v->item_size);
 		else
@@ -138,10 +156,22 @@ void *vector_push_generic(void **data, const void *element)
 	return ret;
 }
 
-/* REMEMBER TO GET A NEW VECTOR AFTER A CALL TO THIS FUNCTION */
-int vector_pop_generic(void **data, void *store);
-
-vector_header_t *vector_get_struct_generic(void **data)
+int vector_pop_generic(void **data, void *store)
 {
-	return (vector_header_t*)(*(char**)data - sizeof(vector_header_t));
+	vector_t *v = *vector_get_struct_generic(data);
+
+	if(v->size == 0)
+		return -1;
+
+	if(store)
+		memcpy(store, (char*)v->data + v->size*v->item_size, v->item_size);
+
+	v->size--;
+
+	return 0;
+}
+
+vector_t **vector_get_struct_generic(void **data)
+{
+	return (vector_t**)(*(char**)data - sizeof(vector_t*));
 }

@@ -18,14 +18,15 @@
 #define SEVEC_H
 #include <sys/types.h>
 
-typedef struct vector_header
+typedef struct vector
 {
 	size_t size;
 	size_t max_size;
 	size_t capacity;
 	size_t item_size;
+	void *data;
 }
-vector_header_t;
+vector_t;
 
 int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size); /* if max_size is 0, set it to -1 */
 void vector_destroy_generic(void **data);
@@ -41,7 +42,7 @@ void *vector_push_generic(void **data, const void *);
 int vector_pop_generic(void **data, void *);
 
 __attribute__((warn_unused_result))
-vector_header_t *vector_get_struct_generic(void **data);
+vector_t **vector_get_struct_generic(void **data);
 
 /* Compare types of a and b */
 #define SEVEC_ASSERT_SAME_TYPE(type, v) ((void*) (1 ? v : (__typeof__(type))0))
@@ -74,6 +75,6 @@ vector_header_t *vector_get_struct_generic(void **data);
 		vector_push_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, element)) \
 
 #define vector_pop(data, store) \
-		vector_pop_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, element))
+		vector_pop_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, store))
 
 #endif

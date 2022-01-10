@@ -5,7 +5,7 @@ PROJECT_NAME := sevec
 source-dir := src
 test-dir := tests
 
-C_CXX_FLAGS := -Wall -Wextra -Wundef -Wpedantic -g -Os \
+C_CXX_FLAGS := -Werror -Wall -Wextra -Wundef -Wpedantic -g -Os \
 	       -Wunreachable-code \
 	       -Wmissing-field-initializers
 CFLAGS := $(C_CXX_FLAGS) -Wmissing-prototypes -Wstrict-prototypes -std=c89
