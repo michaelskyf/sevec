@@ -44,6 +44,7 @@ typedef struct
  * @param[in]			max_size	Maximum size of the vector (if set to 0, it is unlimited)
  * @returns					0 on success, -1 on failure (more info via errno)
  */
+__attribute__((warn_unused_result))
 int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size);
 /**
  * @brief Destroy a vector and set pointer to vector data to NULL
@@ -60,6 +61,7 @@ void vector_destroy_generic(void **data);
  * @returns					0 on success, -1 on failure (more info via errno) \n
  *						Failure on new_size > max_size
  */
+__attribute__((warn_unused_result))
 int vector_resize_generic(void **data, size_t new_size);
 /**
  * @brief Expand vector (reserve more memory)
@@ -70,6 +72,7 @@ int vector_resize_generic(void **data, size_t new_size);
  *						Success on new_capacity <= old_capacity \n
  *						Failure on new_capacity > max_size
  */
+__attribute__((warn_unused_result))
 int vector_reserve_generic(void **data, size_t new_capacity);
 /**
  * @brief Shrink vector (use less memory)
@@ -113,10 +116,19 @@ int vector_pop_generic(void **data, void *store);
  * @brief Get location of pointer to vector_t
  *
  * @param[in]			data		Pointer to \ref vector_t::data "vector data"
- * @returns					Pointer do pointer to \ref vector_t
+ * @returns					Pointer to pointer to \ref vector_t
  */
 __attribute__((warn_unused_result))
 vector_t **vector_get_struct_generic(void **data);
+
+/**
+ * @brief Get vector size
+ *
+ * @param[in]			data		Pointer to \ref vector_t::data "vector data"
+ * @returns					Size of the vector
+ */
+__attribute__((warn_unused_result))
+size_t vector_size_generic(void **data);
 
 /* Compare types of data and v */
 #define SEVEC_ASSERT_SAME_TYPE(data, v) ((void*) (1 ? v : (__typeof__(data))0))
@@ -150,5 +162,11 @@ vector_t **vector_get_struct_generic(void **data);
 
 #define vector_pop(data, store) \
 		vector_pop_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, store))
+
+#define vector_get_struct(data) \
+		vector_get_struct_generic(SEVEC_ASSERT_DATA(data))
+
+#define vector_size(data) \
+		vector_size_generic(SEVEC_ASSERT_DATA(data))
 
 #endif

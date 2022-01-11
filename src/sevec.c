@@ -175,3 +175,9 @@ vector_t **vector_get_struct_generic(void **data)
 {
 	return (vector_t**)(*(char**)data - sizeof(vector_t*));
 }
+
+size_t vector_size_generic(void **data)
+{
+	vector_t *v = *vector_get_struct_generic(data);
+	return v->size;
+}

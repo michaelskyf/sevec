@@ -3,33 +3,23 @@
 #include <errno.h>
 #include <string.h>
 
-typedef struct test_data{
-	int hello_world;
-	float work;
-	char name[20];
-	char surname[20];
-}test_data_t;
 
 int main(void)
 {
+	size_t i;
 	int *data;
-	test_data_t *t;
+	if(vector_create(&data, 0, 0))
+		return -1;
 
-	int xd = 9;
-	test_data_t dummy_data;
+	for(i = 0; i < 10000; i++)
+		vector_push(&data, (int*)&i);
 
-	vector_create(&data, 0, 0);
+	for(i = 0; i < vector_size(&data); i++)
+		printf("%d ", data[i]);
 
-	vector_push(&data, &xd);
+	putc('\n', stdout);
 
 	vector_destroy(&data);
-
-	vector_create(&t, 0, 0);
-
-	vector_push(&t, &dummy_data);
-	vector_pop(&t, NULL);
-
-	vector_destroy(&t);
 
 	return 0;
 }
