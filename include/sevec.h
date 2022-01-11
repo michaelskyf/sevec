@@ -28,6 +28,7 @@ typedef struct
 	size_t capacity;
 	/** Size of a single element */
 	size_t item_size;
+	float growth_rate;
 	/** Pointer to data */
 	void *data;
 /**
@@ -42,10 +43,11 @@ typedef struct
  * @param[in]			item_size	Size of a single element" in vector
  * @param[in]			capacity	Initial capacity of the vector (could be set to 0)
  * @param[in]			max_size	Maximum size of the vector (if set to 0, it is unlimited)
+ * @param[in]			growth_rate	Must be >= 1 (or it will get set to default)
  * @returns					0 on success, -1 on failure (more info via errno)
  */
 __attribute__((warn_unused_result))
-int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size);
+int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size, float growth_rate);
 /**
  * @brief Destroy a vector and set pointer to vector data to NULL
  *
@@ -136,8 +138,8 @@ size_t vector_size_generic(void **data);
 #define SEVEC_ASSERT_DATA(data) (void**)(1 ? (void**)data : (void**)&(**data))
 
 
-#define vector_create(data, capacity, max_size) \
-		vector_create_generic(SEVEC_ASSERT_DATA(data), sizeof(**data), capacity, max_size) \
+#define vector_create(data, capacity, max_size, growth_rate) \
+		vector_create_generic(SEVEC_ASSERT_DATA(data), sizeof(**data), capacity, max_size, growth_rate) \
 
 #define vector_destroy(data) \
 		vector_destroy_generic(SEVEC_ASSERT_DATA(data)) \

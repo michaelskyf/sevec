@@ -20,12 +20,12 @@
 
 #include "include/sevec.h"
 
-static float growth_rate = 1.6f;
+#define GROWTH_RATE_DEFAULT 1.6f
 
 __attribute__((warn_unused_result))
 static int vector_reserve_or_shrink(vector_t *, size_t new_capacity);
 
-int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size)
+int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size, float growth_rate)
 {
 	vector_t *v;
 	max_size = (max_size) ? (max_size) : ((size_t)-1);
@@ -37,6 +37,7 @@ int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t
 		v->capacity = capacity;
 		v->max_size = max_size;
 		v->item_size = item_size;
+		v->growth_rate = (growth_rate >= 1) ? (growth_rate) : (GROWTH_RATE_DEFAULT);
 		v->data = NULL;
 
 		v->data = malloc(sizeof(vector_t*) + capacity*v->item_size);
@@ -75,7 +76,7 @@ int vector_resize_generic(void **data, size_t new_size)
 		while(new_size > new_capacity)
 		{
 			size_t gcap = new_capacity;
-			if(new_capacity == (gcap *= growth_rate))
+			if(new_capacity == (gcap *= v->growth_rate))
 				new_capacity++;
 			else
 				new_capacity = gcap;
@@ -83,7 +84,7 @@ int vector_resize_generic(void **data, size_t new_size)
 		ret = vector_reserve_generic(data, new_capacity);
 	}
 	if(!ret)
-		v->size++;
+		v->size = new_size;
 	return ret;
 }
 
@@ -164,7 +165,7 @@ int vector_pop_generic(void **data, void *store)
 		return -1;
 
 	if(store)
-		memcpy(store, (char*)v->data + v->size*v->item_size, v->item_size);
+		memcpy(store, (char*)v->data + (v->size-1) * v->item_size, v->item_size);
 
 	v->size--;
 
