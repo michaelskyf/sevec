@@ -10,13 +10,11 @@
 - Thread safe
 - Portable
 
-## Testing
-If You want to see how sevec works, simply run `make run`
-
 ## Instructions
+See [test.c](tests/test.c)
 
 ## Supported Languages
-- C
+- C (also works on C++)
 
 ## Supported compilers
 - gcc
@@ -29,10 +27,10 @@ If You want to see how sevec works, simply run `make run`
 - MacOS
 
 ## Information
-- Conforms to C99 and up
+- Conforms to C89 and up (excluding compiler specific "typeof" macro)
 
 ## License
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## See also
-- [GTEngine](https://github.com/michaelskyf/GTEngine) - project that uses sevec [here](https://github.com/michaelskyf/GTEngine/tree/master/lib)
+- [GTEngine](https://github.com/michaelskyf/GTEngine) - project that will use sevec [here](https://github.com/michaelskyf/GTEngine/tree/master/lib)

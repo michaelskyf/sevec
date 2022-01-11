@@ -30,7 +30,7 @@ int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t
 	vector_t *v;
 	max_size = (max_size) ? (max_size) : ((size_t)-1);
 
-	v = malloc(sizeof(vector_t));
+	v = (vector_t*)malloc(sizeof(vector_t));
 	if(v)
 	{
 		v->size = 0;
