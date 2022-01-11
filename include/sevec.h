@@ -28,6 +28,7 @@ typedef struct
 	size_t capacity;
 	/** Size of a single element */
 	size_t item_size;
+	/** How much vector will expand on realloc */
 	float growth_rate;
 	/** Pointer to data */
 	void *data;
