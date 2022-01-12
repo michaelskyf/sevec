@@ -31,11 +31,15 @@ typedef struct
 	/** How much vector will expand on realloc */
 	float growth_rate;
 	/** Pointer to data */
-	void *data;
+	unsigned char *data;
 /**
  * @brief Struct that stores vector's internals
  */
 } vector_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Create a vector
@@ -132,6 +136,10 @@ vector_t **vector_get_struct_generic(void **data);
  */
 __attribute__((warn_unused_result))
 size_t vector_size_generic(void **data);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* Compare types of data and v */
 #define SEVEC_ASSERT_SAME_TYPE(data, v) ((void*) (1 ? v : (__typeof__(data))0))

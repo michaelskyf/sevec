@@ -40,11 +40,11 @@ int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t
 		v->growth_rate = (growth_rate >= 1) ? (growth_rate) : (GROWTH_RATE_DEFAULT);
 		v->data = NULL;
 
-		v->data = malloc(sizeof(vector_t*) + capacity*v->item_size);
+		v->data = (unsigned char*)malloc(sizeof(vector_t*) + capacity*v->item_size);
 		if(v->data)
 		{
 			vector_t **vd;
-			v->data = (char*)v->data+sizeof(vector_t*);
+			v->data = v->data+sizeof(vector_t*);
 
 			*data = v->data;
 			vd = vector_get_struct_generic(data);
@@ -90,17 +90,17 @@ int vector_resize_generic(void **data, size_t new_size)
 
 static int vector_reserve_or_shrink(vector_t *v, size_t new_capacity)
 {
-	void *new_data;
+	unsigned char *new_data;
 
 	if(new_capacity > v->max_size)
 		return -1;
 
-	new_data = realloc((char*)v->data-sizeof(vector_t*), sizeof(vector_t*) + new_capacity*v->item_size);
+	new_data = (unsigned char*)realloc(v->data-sizeof(vector_t*), sizeof(vector_t*) + new_capacity*v->item_size);
 	if(!new_data)
 		return -1;
 
 	v->capacity = new_capacity;
-	v->data = (char*)new_data+sizeof(vector_t*);
+	v->data = new_data+sizeof(vector_t*);
 	if(v->size > new_capacity)
 		v->size = new_capacity;
 
@@ -142,7 +142,7 @@ void *vector_get_generic(void **data, size_t index)
 	vector_t *v = *vector_get_struct_generic(data);
 	if(index > v->size)
 		return NULL;
-	return *(char**)data+v->item_size*index;
+	return v->data+v->item_size*index;
 }
 
 void *vector_push_generic(void **data, const void *element)
@@ -152,7 +152,7 @@ void *vector_push_generic(void **data, const void *element)
 	if(!vector_resize_generic(data, v->size+1))
 	{
 		if(element)
-			ret = memcpy(*(char**)data + (v->size-1) * v->item_size, element, v->item_size);
+			ret = memcpy(v->data + (v->size-1) * v->item_size, element, v->item_size);
 		else
 			ret = vector_get_generic(data, v->size-1);
 	}
@@ -167,7 +167,7 @@ int vector_pop_generic(void **data, void *store)
 		return -1;
 
 	if(store)
-		memcpy(store, (char*)v->data + (v->size-1) * v->item_size, v->item_size);
+		memcpy(store, v->data + (v->size-1) * v->item_size, v->item_size);
 
 	v->size--;
 
