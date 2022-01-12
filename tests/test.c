@@ -49,9 +49,10 @@ int main(void)
 	/* Resize vector to size 1234 */
 	assert (0 == vector_resize(&test_data, 1234));
 	assert (1234 == test_vector->size);
-	/* Resize vector to size 0 */
-	assert (0 == vector_resize(&test_data, 0));
-	assert (0 == test_vector->size);
+	/* Shrink vector to size 5 */
+	assert (0 == vector_shrink(&test_data, 5));
+	assert (5 == test_vector->capacity);
+	assert (5 == test_vector->size);
 
 	/* Destroy the vector */
 	vector_destroy(&test_data);

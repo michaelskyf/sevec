@@ -101,6 +101,8 @@ static int vector_reserve_or_shrink(vector_t *v, size_t new_capacity)
 
 	v->capacity = new_capacity;
 	v->data = (char*)new_data+sizeof(vector_t*);
+	if(v->size > new_capacity)
+		v->size = new_capacity;
 
 	return 0;
 }
