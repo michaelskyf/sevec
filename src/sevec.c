@@ -58,9 +58,9 @@ int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t
 
 void vector_destroy_generic(void **data)
 {
-	vector_t *v = *vector_get_struct_generic(data);
-	free((char*)v->data-sizeof(vector_t*));
-	free(v);
+	vector_t **v = vector_get_struct_generic(data);
+	free(*v); /* Free vector */
+	free(v); /* Free data */
 	*data = NULL;
 }
 

@@ -28,7 +28,7 @@ int main(void)
 	}
 	putc('\n', stdout);
 
-	/* Pop elements and thair contents */
+	/* Pop elements and their contents */
 	while(!vector_pop(&data_vec, &store))
 	{
 		printf("%d ", store);
