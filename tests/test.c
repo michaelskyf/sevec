@@ -44,7 +44,7 @@ int main(void)
 
 	/* Create vector and check if it succeded */
 	assert (0 == vector_create(&test_data, 0, 0, 0));
-	test_vector = *vector_get_struct(&test_data);
+	test_vector = *vector_get_memory(&test_data);
 
 	/* Resize vector to size 1234 */
 	assert (0 == vector_resize(&test_data, 1234));

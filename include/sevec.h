@@ -126,7 +126,7 @@ int vector_pop_generic(void **data, void *store);
  * @returns					Pointer to pointer to \ref vector_t
  */
 __attribute__((warn_unused_result))
-vector_t **vector_get_struct_generic(void **data);
+vector_t **vector_get_memory_generic(void **data);
 
 /**
  * @brief Get vector size
@@ -174,8 +174,8 @@ size_t vector_size_generic(void **data);
 #define vector_pop(data, store) \
 		vector_pop_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, store))
 
-#define vector_get_struct(data) \
-		vector_get_struct_generic(SEVEC_ASSERT_DATA(data))
+#define vector_get_memory(data) \
+		vector_get_memory_generic(SEVEC_ASSERT_DATA(data))
 
 #define vector_size(data) \
 		vector_size_generic(SEVEC_ASSERT_DATA(data))
