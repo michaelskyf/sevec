@@ -31,7 +31,7 @@ typedef struct
 	/** How much vector will expand on realloc */
 	float growth_rate;
 	/** Pointer to data */
-	unsigned char *data;
+	unsigned char *memory;
 /**
  * @brief Struct that stores vector's internals
  */

@@ -28,16 +28,16 @@
  */
 
 /*
-	+----------------------+
-	|       vector_t       |
-	+----------------------+
-	| size_t size;         |
-	| size_t max_size;     |
-	| size_t capacity;     |
-	| size_t item_size;    |
-	| float growth_rate;   |
-	| unsigned char *data; |
-	+----------------------+
+	+------------------------+
+	|        vector_t        |
+	+------------------------+
+	| size_t size;           |
+	| size_t max_size;       |
+	| size_t capacity;       |
+	| size_t item_size;      |
+	| float growth_rate;     |
+	| unsigned char *memory; |
+	+------------------------+
 
 	+------------------+
 	| allocated memory |
@@ -45,9 +45,9 @@
 	| vector_t* | data |
 	+------------------+
 
- * vector_t contains a pointer to "data" inside allocated memory.
+ * vector_t contains a pointer to allocated memory.
  * Function vector_get_memory_generic() return a pointer
- * to the first element of allocated memory, which is vector_t*
+ * to the first element of allocated memory, which is vector_t* (see vector_destroy_generic())
  */
 
 __attribute__((warn_unused_result))
@@ -62,21 +62,18 @@ int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t
 	if(v)
 	{
 		v->size = 0;
-		v->capacity = capacity;
 		v->max_size = max_size;
+		v->capacity = 0;
 		v->item_size = item_size;
 		v->growth_rate = (growth_rate >= 1) ? (growth_rate) : (GROWTH_RATE_DEFAULT);
-		v->data = NULL;
+		v->memory = NULL;
 
-		v->data = (unsigned char*)malloc(sizeof(vector_t*) + capacity*v->item_size);
-		if(v->data)
+		/* if memory is NULL, realloc() will behave like malloc() */
+		if(!vector_reserve_or_shrink(v, capacity))
 		{
-			vector_t **vd;
-			v->data = v->data+sizeof(vector_t*);
+			*data = v->memory+sizeof(vector_t*);
+			*(vector_t**)v->memory = v;
 
-			*data = v->data;
-			vd = vector_get_memory_generic(data);
-			*vd = v;
 			return 0;
 		}
 		free(v);
@@ -86,9 +83,9 @@ int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t
 
 void vector_destroy_generic(void **data)
 {
-	vector_t **v = vector_get_memory_generic(data);
-	free(*v); /* Free vector */
-	free(v); /* Free memory */
+	vector_t **mem = vector_get_memory_generic(data);
+	free(*mem); /* Free vector */
+	free(mem); /* Free memory */
 	*data = NULL;
 }
 
@@ -118,17 +115,18 @@ int vector_resize_generic(void **data, size_t new_size)
 
 static int vector_reserve_or_shrink(vector_t *v, size_t new_capacity)
 {
-	unsigned char *new_data;
+	unsigned char *new_memory;
 
 	if(new_capacity > v->max_size)
 		return -1;
 
-	new_data = (unsigned char*)realloc(v->data-sizeof(vector_t*), sizeof(vector_t*) + new_capacity*v->item_size);
-	if(!new_data)
+	/* Since allocated memory is at least vector_t* long, realloc will not free if capacity == 0 */
+	new_memory = (unsigned char*)realloc(v->memory, sizeof(vector_t*) + new_capacity*v->item_size);
+	if(!new_memory)
 		return -1;
 
 	v->capacity = new_capacity;
-	v->data = new_data+sizeof(vector_t*);
+	v->memory = new_memory;
 	if(v->size > new_capacity)
 		v->size = new_capacity;
 
@@ -144,7 +142,7 @@ int vector_reserve_generic(void **data, size_t new_capacity)
 
 	if(!vector_reserve_or_shrink(v, new_capacity))
 	{
-		*data = v->data;
+		*data = v->memory+sizeof(vector_t*);
 		return 0;
 	}
 	return -1;
@@ -159,7 +157,7 @@ int vector_shrink_generic(void **data, size_t new_capacity)
 
 	if(!vector_reserve_or_shrink(v, new_capacity))
 	{
-		*data = v->data;
+		*data = v->memory+sizeof(vector_t*);
 		return 0;
 	}
 	return -1;
@@ -170,7 +168,7 @@ void *vector_get_generic(void **data, size_t index)
 	vector_t *v = *vector_get_memory_generic(data);
 	if(index > v->size)
 		return NULL;
-	return v->data+v->item_size*index;
+	return *(unsigned char**)data+v->item_size*index;
 }
 
 void *vector_push_generic(void **data, const void *element)
@@ -180,7 +178,7 @@ void *vector_push_generic(void **data, const void *element)
 	if(!vector_resize_generic(data, v->size+1))
 	{
 		if(element)
-			ret = memcpy(v->data + (v->size-1) * v->item_size, element, v->item_size);
+			ret = memcpy(*(unsigned char**)data + (v->size-1) * v->item_size, element, v->item_size);
 		else
 			ret = vector_get_generic(data, v->size-1);
 	}
@@ -195,7 +193,7 @@ int vector_pop_generic(void **data, void *store)
 		return -1;
 
 	if(store)
-		memcpy(store, v->data + (v->size-1) * v->item_size, v->item_size);
+		memcpy(store, *(unsigned char**)data + (v->size-1) * v->item_size, v->item_size);
 
 	v->size--;
 
@@ -204,7 +202,7 @@ int vector_pop_generic(void **data, void *store)
 
 vector_t **vector_get_memory_generic(void **data)
 {
-	return (vector_t**)(*(char**)data - sizeof(vector_t*));
+	return (vector_t**)(*(unsigned char**)data - sizeof(vector_t*));
 }
 
 size_t vector_size_generic(void **data)
