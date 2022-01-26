@@ -145,7 +145,8 @@ size_t vector_size_generic(void **data);
 #define SEVEC_ASSERT_SAME_TYPE(data, v) ((void*) (1 ? v : (__typeof__(data))0))
 /* Check if data is at least of type "(type)**" */
 #define SEVEC_ASSERT_DATA(data) (void**)(1 ? (void**)data : (void**)&(**data))
-
+/* If a function returns void*, make sure to cast it to type* */
+#define SEVEC_RETURN_TYPE(data) (__typeof__(*data))
 
 #define vector_create(data, capacity, max_size, growth_rate) \
 		vector_create_generic(SEVEC_ASSERT_DATA(data), sizeof(**data), capacity, max_size, growth_rate) \
@@ -165,10 +166,12 @@ size_t vector_size_generic(void **data);
 
 
 #define vector_get(data, index) \
+		SEVEC_RETURN_TYPE(data) \
 		vector_get_generic(SEVEC_ASSERT_DATA(data), index)
 
 
 #define vector_push(data, element) \
+		SEVEC_RETURN_TYPE(data) \
 		vector_push_generic(SEVEC_ASSERT_DATA(data), SEVEC_ASSERT_SAME_TYPE(*data, element)) \
 
 #define vector_pop(data, store) \

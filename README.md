@@ -7,7 +7,6 @@
 ## Features
 - Simple and extensible
 - Type safe
-- Thread safe
 - Portable
 
 ## Instructions
@@ -27,7 +26,7 @@ See [test.c](tests/test.c)
 - MacOS
 
 ## Information
-- Conforms to C89 and up (excluding compiler specific "typeof" macro)
+- Conforms to C89 and up
 
 ## License
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
