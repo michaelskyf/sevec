@@ -52,13 +52,15 @@ extern "C" {
  * @returns					0 on success, -1 on failure (more info via errno)
  */
 __attribute__((warn_unused_result))
-int vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size, float growth_rate);
+int
+vector_create_generic(void **data, size_t item_size, size_t capacity, size_t max_size, float growth_rate);
 /**
  * @brief Destroy a vector and set pointer to vector data to NULL
  *
  * @param[in, out]		data		Pointer to \ref vector_t::data "vector data"
  */
-void vector_destroy_generic(void **data);
+void
+vector_destroy_generic(void **data);
 
 /**
  * @brief Resize a vector
@@ -69,7 +71,8 @@ void vector_destroy_generic(void **data);
  *						Failure on new_size > max_size
  */
 __attribute__((warn_unused_result))
-int vector_resize_generic(void **data, size_t new_size);
+int
+vector_resize_generic(void **data, size_t new_size);
 /**
  * @brief Expand vector (reserve more memory)
  *
@@ -80,7 +83,8 @@ int vector_resize_generic(void **data, size_t new_size);
  *						Failure on new_capacity > max_size
  */
 __attribute__((warn_unused_result))
-int vector_reserve_generic(void **data, size_t new_capacity);
+int
+vector_reserve_generic(void **data, size_t new_capacity);
 /**
  * @brief Shrink vector (use less memory)
  *
@@ -89,7 +93,8 @@ int vector_reserve_generic(void **data, size_t new_capacity);
  * @returns					0 on success, -1 on failure (more info via errno) \n
  *						Success on new_capacity >= old_capacity
  */
-int vector_shrink_generic(void **data, size_t new_capacity);
+int
+vector_shrink_generic(void **data, size_t new_capacity);
 
 /**
  * @brief Get element at index
@@ -99,7 +104,8 @@ int vector_shrink_generic(void **data, size_t new_capacity);
  * @returns					Pointer to element on success, NULL on failure
  */
 __attribute__((warn_unused_result))
-void *vector_get_generic(void **data, size_t index);
+void *
+vector_get_generic(void **data, size_t index);
 
 /**
  * @brief Push (copy) element to vector
@@ -108,7 +114,8 @@ void *vector_get_generic(void **data, size_t index);
  * @param[in]			element		Element to copy (if NULL, does not copy)
  * @returns					Pointer to copied element on success, NULL on failure (more info via errno)
  */
-void *vector_push_generic(void **data, const void *element);
+void *
+vector_push_generic(void **data, const void *element);
 /**
  * @brief Push (copy) element to vector
  *
@@ -117,7 +124,8 @@ void *vector_push_generic(void **data, const void *element);
  * @returns					0 on success, -1 on failure \n
  *						Fails if vector size is 0
  */
-int vector_pop_generic(void **data, void *store);
+int
+vector_pop_generic(void **data, void *store);
 
 /**
  * @brief Get location of pointer to vector_t
@@ -126,7 +134,8 @@ int vector_pop_generic(void **data, void *store);
  * @returns					Pointer to pointer to \ref vector_t
  */
 __attribute__((warn_unused_result))
-vector_t **vector_get_memory_generic(void **data);
+vector_t **
+vector_get_memory_generic(void **data);
 
 /**
  * @brief Get vector size
@@ -135,7 +144,8 @@ vector_t **vector_get_memory_generic(void **data);
  * @returns					Size of the vector
  */
 __attribute__((warn_unused_result))
-size_t vector_size_generic(void **data);
+size_t
+vector_size_generic(void **data);
 
 #ifdef __cplusplus
 }
